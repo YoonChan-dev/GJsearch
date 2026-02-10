@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>조례검색</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF9;
+    --surface: #FFFFFF;
+    --border: #E8E5E0;
+    --text-primary: #1A1A1A;
+    --text-secondary: #6B6560;
+    --text-muted: #9C9690;
+    --accent: #2C5F2D;
+    --accent-light: #EDF4ED;
+    --accent-hover: #1E4620;
+    --danger: #C44536;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.08);
+    --radius: 10px;
+    --font: 'Pretendard', 'Noto Sans KR', -apple-system, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Header */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,0.92);
+  }
+
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .logo-text {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text-primary);
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+  }
+
+  .header-badge {
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  /* Main */
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Search Section */
+  .search-section {
+    padding: 48px 0 32px;
+  }
+
+  .search-title {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+  }
+
+  .search-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  .search-box {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .search-input-wrap {
+    flex: 1;
+    position: relative;
+  }
+
+  .search-input-wrap svg {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    width: 18px;
+    height: 18px;
+    pointer-events: none;
+  }
+
+  .search-input {
+    width: 100%;
+    height: 52px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0 16px 0 44px;
+    font-size: 15px;
+    font-family: var(--font);
+    background: var(--surface);
+    color: var(--text-primary);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  .search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(44,95,45,0.1);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .search-btn {
+    height: 52px;
+    padding: 0 28px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-weight: 600;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    white-space: nowrap;
+  }
+
+  .search-btn:hover { background: var(--accent-hover); }
+  .search-btn:active { transform: scale(0.98); }
+  .search-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* API Key Section */
+  .api-key-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .api-key-input {
+    height: 40px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 13px;
+    font-family: var(--font);
+    background: var(--surface);
+    color: var(--text-primary);
+    width: 240px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .api-key-input:focus {
+    border-color: var(--accent);
+  }
+
+  .api-key-label {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .api-key-help {
+    font-size: 11px;
+    color: var(--accent);
+    text-decoration: none;
+    margin-left: auto;
+  }
+
+  .api-key-help:hover { text-decoration: underline; }
+
+  /* Filters */
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-select {
+    height: 36px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 0 32px 0 12px;
+    font-size: 13px;
+    font-family: var(--font);
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239C9690' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    transition: border-color 0.2s;
+  }
+
+  .filter-select:focus { border-color: var(--accent); }
+
+  .filter-count {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: auto;
+  }
+
+  /* Results */
+  .results-section {
+    padding-bottom: 60px;
+  }
+
+  .result-status {
+    padding: 12px 0 20px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .result-status strong {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-muted);
+  }
+
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+  }
+
+  .empty-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+
+  .empty-desc {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* Result Card */
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 10px;
+    transition: box-shadow 0.2s, border-color 0.2s;
+    cursor: pointer;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .result-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: #D0CDC8;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .result-type {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .type-조례 { background: #E8F0FE; color: #1A56DB; }
+  .type-규칙 { background: #FEF3C7; color: #B45309; }
+  .type-훈령 { background: #F0FDF4; color: #16A34A; }
+  .type-예규 { background: #FDF2F8; color: #DB2777; }
+  .type-기타 { background: #F3F4F6; color: #6B7280; }
+
+  .result-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.45;
+    letter-spacing: -0.3px;
+  }
+
+  .result-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .result-meta-item {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .result-meta-item strong {
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* Loading */
+  .loading {
+    display: flex;
+    justify-content: center;
+    padding: 60px 0;
+  }
+
+  .spinner {
+    width: 28px;
+    height: 28px;
+    border: 2.5px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Pagination */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    padding: 24px 0;
+  }
+
+  .page-btn {
+    min-width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-family: var(--font);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+
+  .page-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .page-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    font-weight: 600;
+  }
+
+  /* Error */
+  .error-msg {
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    color: var(--danger);
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  /* Detail Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease;
+  }
+
+  .modal-overlay.active { display: flex; align-items: center; justify-content: center; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal {
+    background: var(--surface);
+    border-radius: 14px;
+    width: 90%;
+    max-width: 720px;
+    max-height: 85vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.25s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .modal-title {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: -0.3px;
+  }
+
+  .modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: var(--bg);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+
+  .modal-close:hover { background: var(--border); }
+
+  .modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .modal-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .modal-meta-tag {
+    font-size: 12px;
+    padding: 4px 10px;
+    background: var(--bg);
+    border-radius: 6px;
+    color: var(--text-secondary);
+  }
+
+  .modal-content {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    word-break: keep-all;
+  }
+
+  .modal-content .jo-title {
+    font-weight: 600;
+    color: var(--accent);
+    margin-top: 16px;
+    margin-bottom: 4px;
+  }
+
+  .modal-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 0;
+    flex-direction: column;
+    gap: 12px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .modal-link {
+    display: inline-block;
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .modal-link:hover { text-decoration: underline; }
+
+  /* Footer */
+  footer {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+  }
+
+  footer a { color: var(--text-secondary); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .search-box { flex-direction: column; }
+    .search-btn { width: 100%; }
+    .search-title { font-size: 22px; }
+    .api-key-section { flex-wrap: wrap; }
+    .api-key-input { width: 100%; }
+    .result-card { padding: 16px; }
+    .modal { width: 95%; max-height: 90vh; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">法</div>
+      <div>
+        <div class="logo-text">조례검색</div>
+        <div class="logo-sub">전국 자치법규 통합검색</div>
+      </div>
+    </div>
+    <span class="header-badge">법제처 OPEN API</span>
+  </div>
+</header>
+
+<main>
+  <section class="search-section">
+    <h1 class="search-title">전국 조례를 검색하세요</h1>
+    <p class="search-desc">법제처 국가법령정보 공동활용 API를 통해 전국 지방자치단체의 조례·규칙을 검색합니다.</p>
+
+    <div class="api-key-section">
+      <span class="api-key-label">API 인증키 (OC)</span>
+      <input type="text" id="apiKey" class="api-key-input" placeholder="open.law.go.kr에서 발급받은 OC" value="test">
+      <a href="https://open.law.go.kr" target="_blank" class="api-key-help">인증키 발급 →</a>
+    </div>
+
+    <div class="search-box">
+      <div class="search-input-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+        <input type="text" id="searchInput" class="search-input" placeholder="검색어를 입력하세요 (예: 주차장, 도시공원, 개인정보보호)" autofocus>
+      </div>
+      <button id="searchBtn" class="search-btn" onclick="search()">검색</button>
+    </div>
+
+    <div class="filters">
+      <select id="filterSort" class="filter-select" onchange="search()">
+        <option value="">정렬: 기본</option>
+        <option value="date">공포일순</option>
+        <option value="name">법규명순</option>
+      </select>
+      <select id="filterType" class="filter-select" onchange="search()">
+        <option value="">유형: 전체</option>
+        <option value="조례">조례</option>
+        <option value="규칙">규칙</option>
+      </select>
+      <span id="resultCount" class="filter-count"></span>
+    </div>
+  </section>
+
+  <section class="results-section">
+    <div id="error"></div>
+    <div id="results">
+      <div class="empty-state">
+        <div class="empty-icon">⚖</div>
+        <div class="empty-title">검색어를 입력해주세요</div>
+        <div class="empty-desc">전국 지방자치단체의 조례와 규칙을<br>키워드로 통합 검색할 수 있습니다.</div>
+      </div>
+    </div>
+    <div id="pagination" class="pagination"></div>
+  </section>
+</main>
+
+<!-- Detail Modal -->
+<div id="modalOverlay" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+    </div>
+  </div>
+</div>
+
+<footer>
+  본 서비스는 <a href="https://open.law.go.kr" target="_blank">법제처 국가법령정보 공동활용</a> OPEN API를 활용합니다.
+  데이터의 정확성은 법제처를 기준으로 합니다.
+</footer>
+
+<script>
+  // ── State ──
+  let currentPage = 1;
+  let currentQuery = '';
+  let totalCount = 0;
+  const DISPLAY = 20;
+
+  // ── Elements ──
+  const $ = id => document.getElementById(id);
+  const searchInput = $('searchInput');
+  const resultsDiv = $('results');
+  const paginationDiv = $('pagination');
+  const errorDiv = $('error');
+  const resultCountSpan = $('resultCount');
+
+  // Enter key
+  searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
+
+  // ── API Helper ──
+  function getApiUrl(query, page) {
+    const oc = $('apiKey').value.trim() || 'test';
+    const sort = $('filterSort').value;
+    let url = `http://www.law.go.kr/DRF/lawSearch.do?OC=${encodeURIComponent(oc)}&target=ordin&type=XML&query=${encodeURIComponent(query)}&display=${DISPLAY}&page=${page}`;
+    if (sort === 'date') url += '&sort=date';
+    if (sort === 'name') url += '&sort=lasc';
+    return url;
+  }
+
+  function getDetailUrl(mst) {
+    const oc = $('apiKey').value.trim() || 'test';
+    return `http://www.law.go.kr/DRF/lawService.do?OC=${encodeURIComponent(oc)}&target=ordin&type=XML&MST=${encodeURIComponent(mst)}`;
+  }
+
+  // ── Fetch with CORS proxy fallback ──
+  async function fetchXml(url) {
+    // 직접 요청 시도
+    try {
+      const res = await fetch(url);
+      if (res.ok) {
+        const text = await res.text();
+        const parser = new DOMParser();
+        return parser.parseFromString(text, 'text/xml');
+      }
+    } catch (e) {
+      // CORS 에러 시 프록시 시도
+    }
+
+    // CORS proxy fallback
+    const proxyUrls = [
+      `https://corsproxy.io/?${encodeURIComponent(url)}`,
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+    ];
+
+    for (const proxy of proxyUrls) {
+      try {
+        const res = await fetch(proxy);
+        if (res.ok) {
+          const text = await res.text();
+          const parser = new DOMParser();
+          return parser.parseFromString(text, 'text/xml');
+        }
+      } catch (e) {
+        continue;
+      }
+    }
+
+    throw new Error('API 요청에 실패했습니다. CORS 제한으로 인해 로컬 환경에서는 프록시 서버가 필요할 수 있습니다.');
+  }
+
+  // ── Search ──
+  async function search(page = 1) {
+    const query = searchInput.value.trim();
+    if (!query) {
+      searchInput.focus();
+      return;
+    }
+
+    currentQuery = query;
+    currentPage = page;
+    errorDiv.innerHTML = '';
+    resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    paginationDiv.innerHTML = '';
+    resultCountSpan.textContent = '';
+
+    try {
+      const url = getApiUrl(query, page);
+      const xml = await fetchXml(url);
+
+      // Check for error
+      const parseError = xml.querySelector('parsererror');
+      if (parseError) throw new Error('API 응답을 파싱할 수 없습니다.');
+
+      totalCount = parseInt(xml.querySelector('totalCnt')?.textContent || '0');
+      const items = xml.querySelectorAll('ordin') || [];
+      const filterType = $('filterType').value;
+
+      resultCountSpan.textContent = `총 ${totalCount.toLocaleString()}건`;
+
+      if (totalCount === 0 || items.length === 0) {
+        resultsDiv.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <div class="empty-title">검색 결과가 없습니다</div>
+            <div class="empty-desc">"${escHtml(query)}"에 대한 자치법규를 찾지 못했습니다.<br>다른 검색어로 시도해보세요.</div>
+          </div>`;
+        return;
+      }
+
+      let html = '';
+      let visibleCount = 0;
+
+      items.forEach((item, i) => {
+        const name = getText(item, '자치법규명') || getText(item, 'ordinNm') || '';
+        const localGov = getText(item, '자치단체명') || getText(item, 'localGovNm') || '';
+        const ordinType = getText(item, '자치법규종류') || getText(item, 'ordinType') || '';
+        const promDate = getText(item, '공포일자') || getText(item, 'promDt') || '';
+        const enfDate = getText(item, '시행일자') || getText(item, 'enfDt') || '';
+        const mst = getText(item, '자치법규ID') || getText(item, 'ordinId') || item.querySelector('자치법규상세링크,ordinDetailLink')?.textContent || '';
+
+        // Client-side type filter
+        if (filterType && !ordinType.includes(filterType)) return;
+        visibleCount++;
+
+        const typeClass = ordinType.includes('조례') ? '조례' :
+                          ordinType.includes('규칙') ? '규칙' :
+                          ordinType.includes('훈령') ? '훈령' :
+                          ordinType.includes('예규') ? '예규' : '기타';
+
+        const formattedDate = formatDate(promDate || enfDate);
+
+        html += `
+          <div class="result-card" style="animation-delay:${i * 0.03}s" onclick="showDetail('${escAttr(mst)}', '${escAttr(name)}')">
+            <div class="result-card-header">
+              <span class="result-type type-${typeClass}">${escHtml(ordinType || '자치법규')}</span>
+              <span class="result-name">${escHtml(name)}</span>
+            </div>
+            <div class="result-meta">
+              ${localGov ? `<span class="result-meta-item">📍 <strong>${escHtml(localGov)}</strong></span>` : ''}
+              ${formattedDate ? `<span class="result-meta-item">📅 ${formattedDate}</span>` : ''}
+            </div>
+          </div>`;
+      });
+
+      if (visibleCount === 0 && filterType) {
+        resultsDiv.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <div class="empty-title">필터 결과가 없습니다</div>
+            <div class="empty-desc">현재 페이지에서 "${filterType}" 유형의 결과가 없습니다.<br>필터를 해제하거나 다른 페이지를 확인해보세요.</div>
+          </div>`;
+      } else {
+        resultsDiv.innerHTML = html;
+      }
+
+      renderPagination();
+
+    } catch (err) {
+      resultsDiv.innerHTML = '';
+      errorDiv.innerHTML = `<div class="error-msg">⚠️ ${escHtml(err.message)}<br><br>
+        <strong>해결 방법:</strong><br>
+        1. <a href="https://open.law.go.kr" target="_blank">open.law.go.kr</a>에서 OC(인증키)를 발급받아 입력하세요.<br>
+        2. 로컬 파일로 열 경우 CORS 제한이 발생할 수 있습니다. 간단한 웹서버로 실행하거나, API 인증키를 확인해주세요.
+      </div>`;
+    }
+  }
+
+  // ── Detail Modal ──
+  async function showDetail(mst, name) {
+    const overlay = $('modalOverlay');
+    const body = $('modalBody');
+    const title = $('modalTitle');
+
+    title.textContent = name;
+    body.innerHTML = '<div class="modal-loading"><div class="spinner"></div><span>본문을 불러오는 중...</span></div>';
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    try {
+      // mst가 URL인 경우 직접 사용, 아니면 ID로 조회
+      let url;
+      if (mst.startsWith('http')) {
+        url = mst.replace('HTML', 'XML').replace('html', 'XML');
+        if (!url.includes('type=XML')) {
+          url = getDetailUrl(mst);
+        }
+      } else {
+        url = getDetailUrl(mst);
+      }
+
+      const xml = await fetchXml(url);
+
+      // 조문 파싱
+      const articles = xml.querySelectorAll('조문,article,jo');
+      let content = '';
+
+      if (articles.length > 0) {
+        articles.forEach(art => {
+          const joNo = art.querySelector('조문번호,joNo,조번호')?.textContent || '';
+          const joTitle = art.querySelector('조문제목,joTitl')?.textContent || '';
+          const joContent = art.querySelector('조문내용,joContent,조문')?.textContent || '';
+
+          if (joNo || joTitle || joContent) {
+            content += `<div class="jo-title">${escHtml(joNo)} ${escHtml(joTitle)}</div>`;
+            content += `<div>${escHtml(joContent)}</div>\n`;
+          }
+
+          // 항
+          const hangs = art.querySelectorAll('항,hang');
+          hangs.forEach(hang => {
+            const hangContent = hang.querySelector('항내용,hangContent')?.textContent || hang.textContent || '';
+            if (hangContent) content += `<div style="margin-left:16px">${escHtml(hangContent)}</div>\n`;
+          });
+        });
+      }
+
+      if (!content) {
+        // Fallback: 전체 텍스트
+        const allText = xml.documentElement?.textContent?.trim() || '';
+        content = allText ? `<div>${escHtml(allText.substring(0, 5000))}</div>` : '<div style="color:var(--text-muted)">본문 내용을 불러올 수 없습니다.</div>';
+      }
+
+      // 메타 정보
+      const localGov = xml.querySelector('자치단체명,localGovNm')?.textContent || '';
+      const ordinType = xml.querySelector('자치법규종류,ordinType')?.textContent || '';
+      const promDate = xml.querySelector('공포일자,promDt')?.textContent || '';
+
+      let metaHtml = '<div class="modal-meta">';
+      if (localGov) metaHtml += `<span class="modal-meta-tag">📍 ${escHtml(localGov)}</span>`;
+      if (ordinType) metaHtml += `<span class="modal-meta-tag">${escHtml(ordinType)}</span>`;
+      if (promDate) metaHtml += `<span class="modal-meta-tag">📅 ${formatDate(promDate)}</span>`;
+      metaHtml += '</div>';
+
+      const lawLink = `https://www.law.go.kr/자치법규/${encodeURIComponent(name)}`;
+
+      body.innerHTML = `
+        ${metaHtml}
+        <div class="modal-content">${content}</div>
+        <a href="${lawLink}" target="_blank" class="modal-link">🔗 국가법령정보센터에서 원문 보기 →</a>
+      `;
+
+    } catch (err) {
+      body.innerHTML = `
+        <div style="text-align:center;padding:40px;color:var(--text-muted)">
+          <p>본문을 불러올 수 없습니다.</p>
+          <p style="font-size:12px;margin-top:8px">${escHtml(err.message)}</p>
+          <a href="https://www.law.go.kr/자치법규/${encodeURIComponent(name)}" target="_blank" class="modal-link">🔗 국가법령정보센터에서 직접 확인 →</a>
+        </div>`;
+    }
+  }
+
+  function closeModal(e) {
+    if (e && e.target !== $('modalOverlay')) return;
+    $('modalOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // ESC key
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  // ── Pagination ──
+  function renderPagination() {
+    const totalPages = Math.ceil(totalCount / DISPLAY);
+    if (totalPages <= 1) { paginationDiv.innerHTML = ''; return; }
+
+    const maxVisible = 7;
+    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
+
+    let html = '';
+
+    if (currentPage > 1) {
+      html += `<button class="page-btn" onclick="search(${currentPage - 1})">‹</button>`;
+    }
+
+    if (start > 1) {
+      html += `<button class="page-btn" onclick="search(1)">1</button>`;
+      if (start > 2) html += `<button class="page-btn" disabled>…</button>`;
+    }
+
+    for (let i = start; i <= end; i++) {
+      html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="search(${i})">${i}</button>`;
+    }
+
+    if (end < totalPages) {
+      if (end < totalPages - 1) html += `<button class="page-btn" disabled>…</button>`;
+      html += `<button class="page-btn" onclick="search(${totalPages})">${totalPages}</button>`;
+    }
+
+    if (currentPage < totalPages) {
+      html += `<button class="page-btn" onclick="search(${currentPage + 1})">›</button>`;
+    }
+
+    paginationDiv.innerHTML = html;
+  }
+
+  // ── Utility ──
+  function getText(el, ...tags) {
+    for (const tag of tags) {
+      const found = el.querySelector(tag);
+      if (found?.textContent?.trim()) return found.textContent.trim();
+    }
+    return '';
+  }
+
+  function formatDate(d) {
+    if (!d || d.length < 8) return d;
+    const clean = d.replace(/[^0-9]/g, '');
+    if (clean.length >= 8) return `${clean.slice(0,4)}.${clean.slice(4,6)}.${clean.slice(6,8)}`;
+    return d;
+  }
+
+  function escHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  function escAttr(s) {
+    return s.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  }
+</script>
+
+</body>
+</html>
